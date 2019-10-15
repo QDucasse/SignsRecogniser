@@ -29,8 +29,8 @@ virtual environment, the installation proceeds as follows:
   ```
 
 Note that wou will need to put the data in the root directory because the files
-were too big for GitHub. 
-  
+were too big for GitHub.
+
   ---
 
   ### Objectives and Milestones of the project
@@ -46,20 +46,20 @@ were too big for GitHub.
   - [ ] MSc research questions (Q.14, Q.15)
 
   ---
-    
+
 ### How to contribute
 
 In order to contribute, first ensure you have the latest version by:
 
 Steps to do once in the beginning:
-*Forking the project under your Github profile:
-*Setting a remote 
+* Forking the project under your Github profile:
+* Setting a remote
 ```bash
   $ git remote add upstream https://github.com/QDucasse/dm_cw1
 ```
 
 Steps to do before beginning your work on the project:
-*Updating your local repository with the latest changes
+* Updating your local repository with the latest changes
 ```bash
   $ git fetch upstream
   $ git checkout master
@@ -67,21 +67,10 @@ Steps to do before beginning your work on the project:
 ```
 
 Steps to do to push your changes:
-*Push the changes to your local directory
+* Push the changes to your local directory
 ```bash
   $ git add <files-that-changed>
   $ git commit -m "Commit message"
   $ git push
 ```
-*Open a pull request on github.com/QDucasse/dm_cw1
-
-
-
-
-
-
-
-
-
-
-  
+* Open a pull request on github.com/QDucasse/dm_cw1
