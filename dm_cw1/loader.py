@@ -21,13 +21,13 @@ from sklearn.model_selection import train_test_split
 path_x_train = './data/x_train_gr_smpl.csv'
 path_y_train = './data/y_train_smpl.csv'
 
-def path_for_sample(sample_nb):
+def path_for_bool_lab(sample_nb):
     if ((sample_nb < 0) or (sample_nb > 9)):
         raise Exception('No data sample with that number')
     return ('/data/y_train_smpl_' + str(sample_nb) + '.csv')
 
-## Data import
-## ===========
+## Data import & Preprocessing
+## ===========================
 
 # Import images vector values
 signs = pd.read_csv(path_x_train, sep=',',na_values='None')
@@ -46,10 +46,11 @@ signs_rd = signs.sample(frac=1)
 ## Data visualisation
 ## ==================
 # Check the first and last rows of the basic + randomised data set
-# print(signs.head(n=5))
-# print(signs.tail(n=5))
-# print(signs_rd.head(n=5))
-# print(signs_rd.tail(n=5))
+print(signs.head(n=5))
+print(signs.tail(n=5))
+print(signs_rd.head(n=5))
+print(signs_rd.tail(n=5))
+#print(signs['0'])
 
 # Display the number of labels of each kind in the dataset
 plt.figure()
@@ -62,13 +63,16 @@ plt.show()
 ## ==========================
 
 # Separation between feature vector (image itself) and target (label)
-cols   = [col for col in signs_rd.columns if col!='label']
-data   = signs_rd[cols]
-target = signs_rd['label']
+def separate_train_test(label_class, ratio=0.20):
+    cols   = [col for col in signs_rd.columns if col!=label_class]
+    data   = signs_rd[cols]
+    target = signs_rd[label_class]
 
-# Separation between training/test data with a 80/20 ratio
-data_train, data_test, target_train, target_test = train_test_split(data,target, test_size = 0.20, random_state = 10)
+    # Separation between training/test data with the given ratio
+    data_train, data_test, target_train, target_test = train_test_split(data,target, test_size = ratio, random_state = 10)
+    return data_train, data_test, target_train, target_test
 
+data_train, data_test, target_train, target_test = separate_train_test('label')
 
 # ============================================
 #            NAIVE BAYES BENCHMARK
@@ -82,4 +86,4 @@ gnb = GaussianNB()
 #train the algorithm on training data and predict using the testing data
 pred = gnb.fit(data_train, target_train).predict(data_test)
 #print the accuracy score of the model
-print("Naive-Bayes accuracy : ",accuracy_score(target_test, pred, normalize = True))
+print("Naive-Bayes accuracy : ", accuracy_score(target_test, pred, normalize = True))
