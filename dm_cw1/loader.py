@@ -21,11 +21,6 @@ from sklearn.model_selection import train_test_split
 path_x_train = './data/x_train_gr_smpl.csv'
 path_y_train = './data/y_train_smpl.csv'
 
-def path_for_bool_lab(sample_nb):
-    if ((sample_nb < 0) or (sample_nb > 9)):
-        raise Exception('No data sample with that number')
-    return ('/data/y_train_smpl_' + str(sample_nb) + '.csv')
-
 ## Data import & Preprocessing
 ## ===========================
 
@@ -42,21 +37,41 @@ signs_rd = signs.sample(frac=1)
 # Optional: Save again as CSV:
 # signs_rd.to_csv('./data/x_train_gr_smpl_rd.csv')
 
+# One label only data sets
+# ========================
+
+def create_one_label_dataset(nb):
+    label_is_correct = (signs['label'] == nb)
+    signs_1label = signs[label_is_correct]
+    path = './data/signs_label' + str(nb) + '.csv'
+    signs_1label.to_csv(path)
+#
+# for i in range(10):
+#     create_one_label_dataset(i)
+#
+def load_one_label_dataset(sample_nb):
+    if ((sample_nb < 0) or (sample_nb > 9)):
+        raise Exception('No data sample with that number')
+    # Load the csv dataset
+    dataframe = pd.read_csv('./data/signs_label' + str(sample_nb) + '.csv')
+    # Drop the index column
+    dataframe = dataframe.drop('Unnamed: 0', axis = 1)
+    return dataframe
 
 ## Data visualisation
 ## ==================
 # Check the first and last rows of the basic + randomised data set
-print(signs.head(n=5))
-print(signs.tail(n=5))
-print(signs_rd.head(n=5))
-print(signs_rd.tail(n=5))
+# print(signs.head(n=5))
+# print(signs.tail(n=5))
+# print(signs_rd.head(n=5))
+# print(signs_rd.tail(n=5))
 #print(signs['0'])
 
 # Display the number of labels of each kind in the dataset
-plt.figure()
-sns.set(style="whitegrid", color_codes=True)
-sns.countplot('label',data=signs_rd)
-plt.show()
+# plt.figure()
+# sns.set(style="whitegrid", color_codes=True)
+# sns.countplot('label',data=signs_rd)
+# plt.show()
 
 
 ## Prepare training/test data
@@ -87,3 +102,23 @@ gnb = GaussianNB()
 pred = gnb.fit(data_train, target_train).predict(data_test)
 #print the accuracy score of the model
 print("Naive-Bayes accuracy : ", accuracy_score(target_test, pred, normalize = True))
+
+# ============================================
+#           CORRELATION MATRIX
+# ============================================
+
+#Using Pearson Correlation
+
+signs_label3 = load_one_label_dataset(3)
+print(signs_label3.head(5))
+
+#Using Pearson Correlation
+plt.figure(figsize=(12,10))
+cor = cor = signs_label3.corr()
+sns.heatmap(cor, annot=True, cmap=plt.cm.Reds)
+plt.show()
+
+cor_target = abs(cor["label"])
+print(cor)
+relevant_features = cor_target[cor_target>0.3]
+print(relevant_features)
