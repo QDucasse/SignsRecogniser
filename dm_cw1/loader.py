@@ -10,7 +10,8 @@ import pandas            as pd
 import seaborn           as sns
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.metrics         import confusion_matrix
+from sklearn.metrics         import confusion_matrix,accuracy_score
+from sklearn.naive_bayes     import GaussianNB
 
 # ============================================
 #       CSV FILE LOADING AND VISUALISATION
@@ -25,16 +26,20 @@ path_y_train = './data/y_train_smpl.csv'
 ## Data import & Preprocessing
 ## ===========================
 
-# Import images vector values
-signs = pd.read_csv(path_x_train, sep=',',na_values='None')
-# Import labels
-labels = pd.read_csv(path_y_train, sep=',',na_values='None')
+def load_base_dataset(x_path,y_path):
+    # Import images vector values
+    signs = pd.read_csv(x_path, sep=',',na_values='None')
+    signs.name = "Signs"
+    # Import labels
+    labels = pd.read_csv(y_path, sep=',',na_values='None')
+    # Link label to vectors
+    signs.insert(0,"label",labels.values)
+    # Line Randomisation
+    signs_rd = signs.sample(frac=1)
+    signs_rd.name = "Signs randomized"
+    return signs, signs_rd
 
-# Link label to vectors
-signs.insert(0,"label",labels.values)
-
-# Line Randomisation
-signs_rd = signs.sample(frac=1)
+signs, signs_rd = load_base_dataset(path_x_train,path_y_train)
 # Optional: Save again as CSV:
 # signs_rd.to_csv('./data/x_train_gr_smpl_rd.csv')
 
@@ -81,6 +86,7 @@ def load_boolean_mask(nb):
     signs_1label = pd.read_csv(path_x_train, sep=',',na_values='None')
     labels = pd.read_csv(path_labels, sep=',',na_values='None')
     signs_1label.insert(0,"label",labels.values)
+    signs_1label.name = "Signs 1 label"
     return signs_1label
 
 
@@ -91,13 +97,14 @@ def load_boolean_mask(nb):
 # print(signs.tail(n=5))
 # print(signs_rd.head(n=5))
 # print(signs_rd.tail(n=5))
-#print(signs['0'])
+# print(signs['0'])
 
 # Display the number of labels of each kind in the dataset
-# plt.figure()
-# sns.set(style="whitegrid", color_codes=True)
-# sns.countplot('label',data=signs_rd)
-# plt.show()
+def plot_labels():
+    plt.figure()
+    sns.set(style="whitegrid", color_codes=True)
+    sns.countplot('label',data=signs_rd)
+    plt.show()
 
 
 ## Prepare training/test data
@@ -113,38 +120,35 @@ def separate_train_test(df,label_class, ratio=0.20):
     data_train, data_test, target_train, target_test = train_test_split(data,target, test_size = ratio, random_state = 10)
     return data_train, data_test, target_train, target_test
 
-data_train, data_test, target_train, target_test = separate_train_test(signs_rd,'label')
-
 # ============================================
 #            NAIVE BAYES BENCHMARK
 # ============================================
 
-# import the necessary module
-from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics     import accuracy_score
-#create an object of the type GaussianNB
-gnb = GaussianNB()
-#train the algorithm on training data and predict using the testing data
-pred = gnb.fit(data_train, target_train).predict(data_test)
-#print the accuracy score of the model
-print("Naive-Bayes accuracy : ", accuracy_score(target_test, pred, normalize = True))
+def gaussian_train_test(df,class_feature):
+    print("Running Naive Bayes on dataframe '{0}' with class feature '{1}'".format(df.name,class_feature))
+    # separate train and test data
+    data_train, data_test, target_train, target_test = separate_train_test(df,class_feature)
+    # create an object of the type GaussianNB
+    gnb = GaussianNB()
+    #train the algorithm on training data and predict using the testing data
+    pred = gnb.fit(data_train, target_train).predict(data_test)
+    #print the accuracy score of the model
+    print("Naive-Bayes accuracy : ", accuracy_score(target_test, pred, normalize = True))
+    # create the confusion matrix of the model
+    print_cmat(target_test,pred)
 
-# create the confusion matrix of the model
-# TO REVIEW!!!
-# with numpy
-bayes_conf_mat_np = confusion_matrix(target_test,pred)
-# with pandas
-bayes_conf_mat_pd = pd.crosstab(target_test,pred)
+def print_cmat(actual,pred):
+    print(pd.crosstab(actual,pred,rownames=['Actual'],colnames=['Predicted']))
 
-# print(bayes_conf_mat_pd)
 
+gaussian_train_test(signs_rd,'label')
 # ============================================
 #           CORRELATION MATRIX
 # ============================================
 
 # Using Pearson Correlation
 
-def store_best_abs_corr_attributes(nb):
+def store_best_abs_corr_attributes(nb,cor_score = 0.01):
     signs_1label = load_boolean_mask(nb)
     cor = signs_1label.corr()
     cor_target = abs(cor["label"])
@@ -206,14 +210,21 @@ def best_n_attributes(nb):
     ba_n = [str(i) for i in ba_n]
     return ba_n
 
-ba_n2  = best_n_attributes(2)
-ba_n5  = best_n_attributes(5)
-ba_n10 = best_n_attributes(10)
+def dataset_best_n_attributes(nb):
+    ba_n = best_n_attributes(nb)
+    # Filter the dataset
+    signs_ba_n = signs[ba_n]
+    signs_ba_n.name = "Signs with best " + str(nb) + " attributes"
+    # Randomize the dataset
+    signs_ba_n_rd = signs_ba_n.sample(frac=1)
+    signs_ba_n_rd.name = "Signs with best " + str(nb) + " attributes randomized"
+    return signs_ba_n,signs_ba_n_rd
 
 # Create the datasets
-signs_ba2  = signs[ba_n2]
-signs_ba5  = signs[ba_n5]
-signs_ba10 = signs[ba_n10]
+signs_ba2,signs_ba2_rd = dataset_best_n_attributes(2)
+signs_ba5,signs_ba5_rd = dataset_best_n_attributes(5)
+signs_ba10,signs_ba10_rd = dataset_best_n_attributes(10)
+
 # Print the datasets
 # print(signs_ba2)
 # print(signs_ba5)
@@ -223,24 +234,7 @@ signs_ba10 = signs[ba_n10]
 # signs_ba5.to_csv('./data/x_train_gr_smpl_5ba.csv')
 # signs_ba10.to_csv('./data/x_train_gr_smpl_10ba.csv')
 
-
-# Randomize the datasets
-signs_ba2_rd  = signs_ba2.sample(frac=1)
-signs_ba5_rd  = signs_ba5.sample(frac=1)
-signs_ba10_rd = signs_ba10.sample(frac=1)
-
 # Run Bayes over the new sets
-data_train_2, data_test_2, target_train_2, target_test_2 = separate_train_test(signs_ba2_rd,'label')
-gnb_2 = GaussianNB()
-pred_2 = gnb_2.fit(data_train_2, target_train_2).predict(data_test_2)
-print("Naive-Bayes accuracy for 2 features: ", accuracy_score(target_test_2, pred_2, normalize = True))
-
-data_train_5, data_test_5, target_train_5, target_test_5 = separate_train_test(signs_ba5_rd,'label')
-gnb_5 = GaussianNB()
-pred_5 = gnb_5.fit(data_train_5, target_train_5).predict(data_test_5)
-print("Naive-Bayes accuracy for 5 features: ", accuracy_score(target_test_5, pred_5, normalize = True))
-
-data_train_10, data_test_10, target_train_10, target_test_10 = separate_train_test(signs_ba10_rd,'label')
-gnb_10 = GaussianNB()
-pred_10 = gnb_10.fit(data_train_10, target_train_10).predict(data_test_10)
-print("Naive-Bayes accuracy for 10 features: ", accuracy_score(target_test_10, pred_10, normalize = True))
+gaussian_train_test(signs_ba2_rd,'label')
+gaussian_train_test(signs_ba5_rd,'label')
+gaussian_train_test(signs_ba10_rd,'label')
