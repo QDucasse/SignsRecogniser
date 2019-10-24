@@ -9,9 +9,11 @@ import numpy             as np
 import pandas            as pd
 import seaborn           as sns
 import matplotlib.pyplot as plt
+from sklearn                 import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.metrics         import confusion_matrix,accuracy_score
 from sklearn.naive_bayes     import GaussianNB
+from sklearn.cluster         import KMeans
 
 # ============================================
 #       CSV FILE LOADING AND VISUALISATION
@@ -119,6 +121,9 @@ def separate_train_test(df,label_class, ratio=0.20):
     # Separation between training/test data with the given ratio
     data_train, data_test, target_train, target_test = train_test_split(data,target, test_size = ratio, random_state = 10)
     return data_train, data_test, target_train, target_test
+
+def normalize_dataset(df):
+    return pd.DataFrame(preprocessing.scale(df))
 
 # ============================================
 #            NAIVE BAYES BENCHMARK
@@ -238,3 +243,10 @@ signs_ba10,signs_ba10_rd = dataset_best_n_attributes(10)
 gaussian_train_test(signs_ba2_rd,'label')
 gaussian_train_test(signs_ba5_rd,'label')
 gaussian_train_test(signs_ba10_rd,'label')
+
+# ============================================
+#            K-MEANS CLUSTERING
+# ============================================
+
+signs_ba2_rd_std = normalize_dataset(signs_ba2_rd)
+print(signs_ba2_rd_std)
