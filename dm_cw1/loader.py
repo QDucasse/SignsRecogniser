@@ -25,6 +25,38 @@ from sklearn.cluster         import KMeans
 path_x_train = './data/x_train_gr_smpl.csv'
 path_y_train = './data/y_train_smpl.csv'
 
+def path_best_features(nb):
+    '''
+    Generate the path for the best features csv file.
+    Parameters
+    ==========
+    nb: int
+        Label of the wanted path.
+
+    Returns
+    path: string
+        Path to the best features file for the label <nb>
+    '''
+    if(nb < 0 or nb > 9):
+        raise Exception('No data sample with that number')
+    return './data/best_features_smpl_' + str(nb) + '.csv'
+
+def path_boolean_mask(nb):
+    '''
+    Generate the path for the boolean mask csv file.
+    Parameters
+    ==========
+    nb: int
+        Label of the wanted path.
+
+    Returns
+    path: string
+        Path to the bolean mask file for the label <nb>
+    '''
+    if(nb < 0 or nb > 9):
+        raise Exception('No data sample with that number')
+    return './data/signs_label' + str(sample_nb) + '.csv'
+
 ## Data importation
 ## ================
 
@@ -92,10 +124,8 @@ def load_one_label_dataset(sample_nb):
     dataframe: Pandas.DataFrame
         Dataset containing only the images with the input label.
     '''
-    if ((sample_nb < 0) or (sample_nb > 9)):
-        raise Exception('No data sample with that number')
     # Load the csv dataset
-    dataframe = pd.read_csv('./data/signs_label' + str(sample_nb) + '.csv')
+    dataframe = pd.read_csv(path_boolean_mask(sample_nb))
     # Drop the index column
     dataframe = dataframe.drop('Unnamed: 0', axis = 1)
     return dataframe
@@ -114,8 +144,8 @@ def load_dataset_with_boolean_mask(nb):
     signs_1label: Pandas.Dataframe
         Signs dataset along with a boolean mask for <nb>.
     '''
-    path_x_train = './data/x_train_gr_smpl.csv'
-    path_labels  = './data/y_train_smpl_' + str(nb) + '.csv'
+    global path_x_train
+    path_labels  = path_boolean_mask(nb)
     signs_1label = pd.read_csv(path_x_train, sep=',',na_values='None')
     labels = pd.read_csv(path_labels, sep=',',na_values='None')
     signs_1label.insert(0,"label",labels.values)
@@ -168,35 +198,35 @@ def display_nth_sign(df,n):
 ## Filters
 ## =======
 
-def normalise_dataset(df,feature_class):
+def normalise_dataset(df,class_feature):
     '''
     Normalise the dataset by using the preprocessing functions coming in sklearn.
     Parameters
     ==========
     df: Pandas.Dataframe
         Dataframe to be normalised.
-    feature_class: string
+    class_feature: string
         Feature that has NOT to be taken in consideration by the normalisation.
     '''
-    fc = df[feature_class]
-    cols = [col for col in df.columns if col!=feature_class]
+    fc = df[class_feature]
+    cols = [col for col in df.columns if col!=class_feature]
     dataset_without_fc = df[cols]
     normalised_df = pd.DataFrame(preprocessing.scale(dataset_without_fc))
     normalised_df.insert(0,"label",fc.values)
     return normalised_df
 
-def divide_by_255(df,feature_class):
+def divide_by_255(df,class_feature):
     '''
     Normalise the dataset by dividing the grey scale pixels by 255.
     Parameters
     ==========
     df: Pandas.Dataframe
         Dataframe to be normalised.
-    feature_class: string
+    class_feature: string
         Feature that has NOT to be taken in consideration by the normalisation.
     '''
-    fc = df[feature_class]
-    cols = [col for col in df.columns if col!=feature_class]
+    fc = df[class_feature]
+    cols = [col for col in df.columns if col!=class_feature]
     dataset_without_fc = df[cols]
     normalised_df = dataset_without_fc.astype('float')/255
     normalised_df.insert(0,"label",fc.values)
@@ -205,7 +235,7 @@ def divide_by_255(df,feature_class):
 ## Prepare training/test data
 ## ==========================
 
-def separate_train_test(df,feature_class, ratio=0.20):
+def separate_train_test(df,class_feature, ratio=0.20):
     '''
     Extract the class feature from the dataset and creates a train/test dataset
     as well as the corresponding train/test targets.
@@ -213,14 +243,14 @@ def separate_train_test(df,feature_class, ratio=0.20):
     ==========
     df: Pandas.Dataframe
         The dataframe that needs to be split.
-    feature_class: string
+    class_feature: string
         Name of the class feature (column of the dataframe).
     ratio: float
         Ration of train/test that needs to be done. Default: 0.2 (0.8 train/0.2 test).
     '''
-    cols   = [col for col in df.columns if col!=feature_class]
+    cols   = [col for col in df.columns if col!=class_feature]
     data   = df[cols]
-    target = df[feature_class]
+    target = df[class_feature]
 
     # Separation between training/test data with the given ratio
     data_train, data_test, target_train, target_test = train_test_split(data,target, test_size = ratio, random_state = 10)
