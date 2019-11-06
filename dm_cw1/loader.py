@@ -213,6 +213,7 @@ def normalise_dataset(df,class_feature):
     dataset_without_fc = df[cols]
     normalised_df = pd.DataFrame(preprocessing.scale(dataset_without_fc))
     normalised_df.insert(0,"label",fc.values)
+    normalised_df.name = df.name + ' normalised'
     return normalised_df
 
 def divide_by_255(df,class_feature):
@@ -230,6 +231,7 @@ def divide_by_255(df,class_feature):
     dataset_without_fc = df[cols]
     normalised_df = dataset_without_fc.astype('float')/255
     normalised_df.insert(0,"label",fc.values)
+    normalised_df.name = df.name + ' /255'
     return normalised_df
 
 ## Prepare training/test data

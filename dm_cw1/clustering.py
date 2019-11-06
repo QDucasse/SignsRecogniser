@@ -64,6 +64,5 @@ def unsup_kmeans_train_test(df,df_std,n_clusters):
 
 kmeans_cluster = KMeans(n_clusters = 10)
 kmeans_cluster.fit(signs_ba5_rd_std)
-print()
 print(kmeans_cluster.labels_[::10])
 print("KMeans accuracy : ", accuracy_score(signs_ba5_rd['label'],kmeans_cluster.labels_, normalize = True))

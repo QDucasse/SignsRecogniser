@@ -10,8 +10,9 @@ import seaborn           as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics         import confusion_matrix,accuracy_score
 from sklearn.naive_bayes     import GaussianNB
-from loader import load_base_dataset, path_x_train, path_y_train, path_best_features, path_boolean_mask
-
+from loader import (load_base_dataset, path_x_train, path_y_train,
+                    path_best_features, path_boolean_mask, divide_by_255,
+                    separate_train_test)
 
 # ============================================
 #            NAIVE BAYES BENCHMARK
@@ -22,7 +23,7 @@ def gaussian_train_test(df,class_feature,ratio=0.2):
     Runs a gaussian model over the dataset with the class feature.
 
     '''
-    print("Running Naive Bayes on dataframe '{0}' with class feature '{1}'".format(df.name,class_feature))
+    print("Running Naive Bayes on dataframe '{0}'\nwith class feature '{1}'".format(df.name,class_feature))
     # Separate train and test data
     data_train, data_test, target_train, target_test = separate_train_test(df,class_feature,ratio=ratio)
     # Create a Gaussian Naive Bayes model
@@ -184,15 +185,18 @@ def dataset_best_n_attributes(nb,df):
     ba_n = best_n_attributes(nb)
     # Filter the dataset
     df_ba_n = df[ba_n]
-    df_ba_n.name = "Dataframe with best " + str(nb) + " attributes"
+    df_ba_n.name =  df.name + " with best " + str(nb) + " attributes"
     # Randomize the dataset
     df_ba_n_rd = df_ba_n.sample(frac=1)
-    df_ba_n_rd.name = "Dataframe with best " + str(nb) + " attributes randomized"
+    df_ba_n_rd.name = df.name + " with best " + str(nb) + " attributes randomised"
     return df_ba_n,df_ba_n_rd
 
 if __name__ == "__main__":
-    # Create the datasets
+    # Loading and Preprocessing
     signs, signs_rd = load_base_dataset(path_x_train,path_y_train)
+    signs = divide_by_255(signs,'label')
+    signs_rd = divide_by_255(signs_rd,'label')
+
     signs_ba2,signs_ba2_rd = dataset_best_n_attributes(2,signs)
     signs_ba5,signs_ba5_rd = dataset_best_n_attributes(5,signs)
     signs_ba10,signs_ba10_rd = dataset_best_n_attributes(10,signs)
@@ -207,6 +211,7 @@ if __name__ == "__main__":
     # signs_ba10.to_csv('./data/x_train_gr_smpl_10ba.csv')
 
     # Run Bayes over the new sets
-    # gaussian_train_test(signs_ba2_rd,'label')
-    # gaussian_train_test(signs_ba5_rd,'label')
-    # gaussian_train_test(signs_ba10_rd,'label')
+    gaussian_train_test(signs_rd,'label')
+    gaussian_train_test(signs_ba2_rd,'label')
+    gaussian_train_test(signs_ba5_rd,'label')
+    gaussian_train_test(signs_ba10_rd,'label')
