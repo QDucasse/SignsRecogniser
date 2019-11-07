@@ -193,7 +193,7 @@ def display_nth_sign(df,n):
         Row of the dataset.
     '''
     plt.figure()
-    plt.imshow(df[n],reshape((28,28)))
+    plt.imshow(df.iloc(n),reshape((28,28)))
 
 ## Filters
 ## =======
@@ -264,3 +264,4 @@ if __name__ == "__main__":
     plot_feature(signs,'label')
     signs_rd = divide_by_255(signs_rd,'label')
     print_head_tail(signs_rd)
+    display_nth_sign(signs_rd,1181)

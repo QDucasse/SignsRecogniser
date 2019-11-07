@@ -10,10 +10,10 @@ import pandas            as pd
 import seaborn           as sns
 import matplotlib.pyplot as plt
 from scipy.stats     import mode
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score,confusion_matrix
 from sklearn.cluster import KMeans
 from loader          import divide_by_255, load_base_dataset, path_x_train, path_y_train
-from naive_bayes     import dataset_best_n_attributes
+from naive_bayes     import dataset_best_n_attributes, print_cmat
 
 # ============================================
 #            K-MEANS CLUSTERING
@@ -42,20 +42,63 @@ def plot_elbow(df,nb_clusters = 11):
     plt.ylabel('WCSS')
     plt.show()
 
-def unsup_kmeans_train_test(df,df_std,n_clusters):
-    # Fitting K-Means to the dataset
-    kmeans = KMeans(n_clusters = n_clusters, init = 'k-means++', random_state = 42)
-    y_kmeans = kmeans.fit_predict(df_std)
-    #beginning of  the cluster numbering with 1 instead of 0
-    y_kmeans1=y_kmeans
-    y_kmeans1=y_kmeans+1
-    # New Dataframe called cluster
-    cluster = pd.DataFrame(y_kmeans1)
-    # Adding cluster to the Dataset1
-    df['cluster'] = cluster
-    #Mean of clusters
-    kmeans_mean_cluster = pd.DataFrame(round(df.groupby('cluster').mean(),1))
-    return kmeans_mean_cluster
+def df_no_class(df,class_feature):
+    df_no_class = df.drop(class_feature,axis = 1)
+    df_no_class.name = df.name + " no class feature"
+    return df_no_class
+
+
+def kmeans_sup_train_test(df,class_feature,nb_clusters=10):
+    print("Running KMeans supervised clustering (on feature {0}) with {1} clusters on dataframe '{2}'".format(class_feature,nb_clusters,df.name))
+    # Definition of the clusters
+    #TODO! Separate train/test data
+    kmeans = KMeans(n_clusters = nb_clusters)
+    clusters = kmeans.fit_predict(df)
+    print("Shape of the clusters centers: {0}".format(kmeans.cluster_centers_.shape))
+
+    # Association of the clusters with their predicted label
+    labels = np.zeros_like(clusters)
+    for i in range(nb_clusters):
+        mask = (clusters == i)
+        labels[mask] = mode(df['label'][mask])[0]
+
+    # Accuracy score:
+    print(accuracy_score(df[class_feature], labels))
+    # Confusion matrix
+    # print_cmat(df[class_feature],labels)
+
+    # Print heatmap
+
+    return kmeans, labels
+
+def kmeans_unsup_train_test(df,df_nolab,class_feature,nb_clusters=10):
+    print("Running KMeans unsupervised clustering with {1} clusters on dataframe '{1}'".format(class_feature,nb_clusters,df.name))
+    # Definition of the clusters
+    #TODO! Separate train/test data
+    kmeans = KMeans(n_clusters = nb_clusters)
+    clusters = kmeans.fit_predict(df_nolab)
+    print("Shape of the clusters centers: {0}".format(kmeans.cluster_centers_.shape))
+
+    # Association of the clusters with their predicted label
+    labels = np.zeros_like(clusters)
+    for i in range(nb_clusters):
+        mask = (clusters == i)
+        labels[mask] = mode(df['label'][mask])[0]
+
+    # Accuracy score:
+    print(accuracy_score(df[class_feature], labels))
+    # Confusion matrix
+    # print_cmat(df[class_feature],labels)
+    return kmeans
+
+def kmeans_visualisation(kmeans,shape,nb_clusters=10):
+    fig, ax = plt.subplots(2, 5, figsize=(8, 3))
+    centers = kmeans.cluster_centers_.reshape(10, 48, 48)
+    for axi, center in zip(ax.flat, centers):
+        axi.set(xticks=[], yticks=[])
+        axi.imshow(center, interpolation='nearest', cmap=plt.cm.binary)
+    plt.show()
+
 
 if __name__ == "__main__":
     # Loading and Preprocessing
@@ -68,10 +111,10 @@ if __name__ == "__main__":
     signs_ba10,signs_ba10_rd = dataset_best_n_attributes(10,signs)
 
     # Removing the class feature in order to obtain an unsupervised prediction
-    signs_rd_nolab      = signs_rd.drop('label',axis = 1)
-    signs_ba2_rd_nolab  = signs_ba2_rd.drop('label',axis = 1)
-    signs_ba5_rd_nolab  = signs_ba5_rd.drop('label',axis = 1)
-    signs_ba10_rd_nolab = signs_ba10_rd.drop('label',axis = 1)
+    signs_rd_nolab      = df_no_class(signs_rd,'label')
+    signs_ba2_rd_nolab  = df_no_class(signs_ba2_rd,'label')
+    signs_ba5_rd_nolab  = df_no_class(signs_ba5_rd,'label')
+    signs_ba10_rd_nolab = df_no_class(signs_ba10_rd,'label')
 
     # Elbow method:
     # plot_elbow(signs_ba2_rd_std)
@@ -84,23 +127,22 @@ if __name__ == "__main__":
     # Kmeans definition
     n_clusters_elbow = 3
     n_clusters = 10
-    kmeans = KMeans(n_clusters = 10)
-    clusters = kmeans.fit_predict(signs_ba5_rd_nolab)
-    print(kmeans.cluster_centers_.shape)
 
-    # Kmeans visualisation
-    fig, ax = plt.subplots(2, 5, figsize=(8, 3))
-    centers = kmeans.cluster_centers_.reshape(10, 10, 5)
-    for axi, center in zip(ax.flat, centers):
-        axi.set(xticks=[], yticks=[])
-        axi.imshow(center, interpolation='nearest', cmap=plt.cm.binary)
+    kmeans_res, labels = kmeans_sup_train_test(signs_ba10_rd,'label')
+
+    plt.figure()
+    cmat = confusion_matrix(signs_ba10_rd['label'], labels)
+    sns.heatmap(cmat.T, square=True, annot=True, fmt='d', cbar=False,
+                xticklabels=signs_ba10_rd['label'],
+                yticklabels=signs_ba10_rd['label'])
+    plt.xlabel('true label')
+    plt.ylabel('predicted label');
     plt.show()
 
-    labels = np.zeros_like(clusters)
-    for i in range(10):
-        mask = (clusters == i)
-        labels[mask] = mode(signs_ba5_rd['label'][mask])[0]
-
-    print(accuracy_score(signs_ba5_rd['label'], labels))
-
-    #print("KMeans accuracy : ", accuracy_score(signs_ba5_rd['label'],kmeans_cluster.labels_, normalize = True))
+    # Kmeans visualisation
+    # fig, ax = plt.subplots(2, 5, figsize=(8, 3))
+    # centers = kmeans_res.cluster_centers_.reshape(10, 48, 48)
+    # for axi, center in zip(ax.flat, centers):
+    #     axi.set(xticks=[], yticks=[])
+    #     axi.imshow(center, interpolation='nearest', cmap=plt.cm.binary)
+    # plt.show()

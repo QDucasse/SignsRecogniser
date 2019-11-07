@@ -23,6 +23,7 @@ def gaussian_train_test(df,class_feature,ratio=0.2):
     Runs a gaussian model over the dataset with the class feature.
 
     '''
+    print("================================================================")
     print("Running Naive Bayes on dataframe '{0}'\nwith class feature '{1}'".format(df.name,class_feature))
     # Separate train and test data
     data_train, data_test, target_train, target_test = separate_train_test(df,class_feature,ratio=ratio)
@@ -31,7 +32,7 @@ def gaussian_train_test(df,class_feature,ratio=0.2):
     # Train the algorithm on training data and predict using the testing data
     pred = gnb.fit(data_train, target_train).predict(data_test)
     # Print the accuracy score of the model
-    print("Naive-Bayes accuracy : ", accuracy_score(target_test, pred, normalize = True))
+    print("Naive-Bayes accuracy: ", accuracy_score(target_test, pred, normalize = True))
     # Print the confusion matrix of the model
     print_cmat(target_test,pred)
 
@@ -196,6 +197,9 @@ if __name__ == "__main__":
     signs, signs_rd = load_base_dataset(path_x_train,path_y_train)
     signs = divide_by_255(signs,'label')
     signs_rd = divide_by_255(signs_rd,'label')
+
+    ## UNCOMMENT IF YOU HAVE TO GENERATE THE FILES WITH THE BEST ATTRIBUTES
+    # store_best_attributes()
 
     signs_ba2,signs_ba2_rd = dataset_best_n_attributes(2,signs)
     signs_ba5,signs_ba5_rd = dataset_best_n_attributes(5,signs)
