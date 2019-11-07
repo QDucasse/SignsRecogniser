@@ -19,7 +19,7 @@ virtual environment, the installation proceeds as follows:
   ```bash
     $ cd <directory you want to install to>
     $ git clone https://github.com/QDucasse/dm_cw1
-    $ cd fdia_simulation
+    $ cd dm_cw1
     $ mkvirtualenv -a . -r requirements.txt VIRTUALENV_NAME
   ```
   *Launch of the environment & installation of the project*
@@ -29,7 +29,11 @@ virtual environment, the installation proceeds as follows:
   ```
 
 Note that wou will need to put the data in the root directory because the files
-were too big for GitHub.
+were too big for GitHub. The base datasets can be found following the link
+http://www.macs.hw.ac.uk/~ek19/data/. Another version of the files is also
+available if you do not want to perform the transformation yourself but rather
+obtain all the created files directly (the files can still be recreated uncommenting
+one of the main areas of the `loader.py` file).
 
   ---
 
@@ -37,11 +41,11 @@ were too big for GitHub.
 
   - [X] Data loading and randomisation (Q.1, Q.2, Q.3)
   - [X] Naive Bayes estimation (Q.4)
-  - [ ] Confusion matrix for Naive Bayes estimation
+  - [X] Confusion matrix for Naive Bayes estimation
   - [ ] Deeper analysis of the data (Q.5)
-  - [ ] Classification improvement (Q.6)
+  - [X] Classification improvement (Q.6)
   - [ ] Conclusions and research (Q.7, Q.8, Q.9)
-  - [ ] Clustering, k-means (Q.10)
+  - [X] Clustering, k-means (Q.10)
   - [ ] Conclusions on clustering (Q.12, Q.13)
   - [ ] MSc research questions (Q.14, Q.15)
 
@@ -52,7 +56,8 @@ were too big for GitHub.
 In order to contribute, first ensure you have the latest version by:
 
 Steps to do once in the beginning:
-* Forking the project under your Github profile:
+* Forking the project under your Github profile
+* Cloning the project on your computer as explained above
 * Setting a remote
 ```bash
   $ git remote add upstream https://github.com/QDucasse/dm_cw1
@@ -73,4 +78,4 @@ Steps to do to push your changes:
   $ git commit -m "Commit message"
   $ git push
 ```
-* Open a pull request on github.com/QDucasse/dm_cw1
+* Open a pull request on `github.com/QDucasse/dm_cw1`
