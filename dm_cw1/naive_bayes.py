@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics         import confusion_matrix,accuracy_score
 from sklearn.naive_bayes     import GaussianNB
 from loader import (load_base_dataset, path_x_train, path_y_train,
-                    path_best_features, path_boolean_mask, divide_by_255,
+                    path_best_features, divide_by_255,
                     separate_train_test)
 
 # ============================================

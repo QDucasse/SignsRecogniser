@@ -4,7 +4,7 @@
 '''
 
 import random
-from loader import path_x_train, path_y_train
+from loader import path_x_train, path_y_train, path_boolean_mask
 
 path_base_arff = './data/arff/'
 
@@ -45,11 +45,15 @@ def read_add_labels(path,rows):
                 rows_with_label.append(rows[i].strip() + ', label' + line)
     return rows_with_label
 
-def select_instances(lab_dataset):
+def select_instances(lab_dataset,bm=False):
     '''
     Select the same number of instances for each label (first n ones).
     '''
-    instance_holder = [[],[],[],[],[],[],[],[],[],[]]
+    if bm:
+        instance_holder = [[],[]]
+    else:
+        instance_holder = [[],[],[],[],[],[],[],[],[],[]]
+
     for instance in lab_dataset:
         label = int(instance[-2])
         instance_holder[label].append(instance)
@@ -62,11 +66,15 @@ def select_instances(lab_dataset):
             new_dataset.append(instance)
     return new_dataset
 
-def select_rd_instances(lab_dataset):
+def select_rd_instances(lab_dataset,bm=False):
     '''
     Select the same number of instances for each label (first n ones).
     '''
-    instance_holder = [[],[],[],[],[],[],[],[],[],[]]
+    if bm:
+        instance_holder = [[],[]]
+    else:
+        instance_holder = [[],[],[],[],[],[],[],[],[],[]]
+
     for instance in lab_dataset:
         label = int(instance[-2])
         instance_holder[label].append(instance)
@@ -159,7 +167,7 @@ def create_base_dataset():
     create_dataset(path_x_train,path_y_train,"base_dataset")
 
 def create_shrinked_dataset(path_content,path_labels,dataset_name,
-                            index_list = [i for i in range(2304)], random_selection=True):
+                            index_list = [i for i in range(2304)], random_selection=True, bm=False):
     '''
     Creates a Weka file with the content from the first path prefixed by the
     content from the second, selecting only the <index_list> attributes
@@ -178,14 +186,18 @@ def create_shrinked_dataset(path_content,path_labels,dataset_name,
     images = read_rows(path_content)
     data = read_add_labels(path_labels,images)
     if not(random_selection):
-        shrinked_data = select_instances(data)
+        shrinked_data = select_instances(data,bm=bm)
     else:
-        shrinked_data = select_rd_instances(data)
+        shrinked_data = select_rd_instances(data,bm=bm)
     header = create_header(index_list)
     dataset = add_data(header,shrinked_data)
     write_dataset(dataset_name,dataset)
 
 if __name__ == "__main__":
     create_base_dataset()
-    create_shrinked_dataset(path_x_train,path_y_train,'shrinked_random_dataset')
-    create_shrinked_dataset(path_x_train,path_y_train,'shrinked_dataset',random_selection = False)
+    create_shrinked_dataset(path_x_train,path_y_train,'sm_rd_dataset')
+    create_shrinked_dataset(path_x_train,path_y_train,'sm_dataset',random_selection = False)
+
+    for i in range(10):
+        create_shrinked_dataset(path_x_train,path_boolean_mask(i),'sm_rd_dataset'+str(i),bm=True)
+        create_shrinked_dataset(path_x_train,path_boolean_mask(i),'sm_dataset'+str(i),random_selection = False,bm=True)
