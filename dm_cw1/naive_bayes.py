@@ -4,15 +4,14 @@
 '''
 import cv2
 import sklearn
+
 import numpy             as np
 import pandas            as pd
 import seaborn           as sns
 import matplotlib.pyplot as plt
+from loader import *
 from sklearn.metrics         import confusion_matrix,accuracy_score
 from sklearn.naive_bayes     import GaussianNB
-from loader import (load_base_dataset, path_x_train, path_y_train,
-                    path_best_features, divide_by_255,
-                    separate_train_test)
 
 # ============================================
 #            NAIVE BAYES BENCHMARK
@@ -195,27 +194,34 @@ def dataset_best_n_attributes(nb,df):
 if __name__ == "__main__":
     # Loading and Preprocessing
     signs, signs_rd = load_base_dataset(path_x_train,path_y_train)
-    signs = divide_by_255(signs,'label')
-    signs_rd = divide_by_255(signs_rd,'label')
+    sm_signs = select_instances(signs,'label')
+    sm_signs_rd = randomise(sm_signs)
 
     ## UNCOMMENT IF YOU HAVE TO GENERATE THE FILES WITH THE BEST ATTRIBUTES
     # store_best_attributes()
 
-    signs_ba2,signs_ba2_rd = dataset_best_n_attributes(2,signs)
-    signs_ba5,signs_ba5_rd = dataset_best_n_attributes(5,signs)
-    signs_ba10,signs_ba10_rd = dataset_best_n_attributes(10,signs)
-
-    # Print the datasets
-    # print(signs_ba2)
-    # print(signs_ba5)
-    # print(signs_ba10)
+    signs_ba2, signs_ba2_rd = dataset_best_n_attributes(2,signs)
+    signs_ba5, signs_ba5_rd = dataset_best_n_attributes(5,signs)
+    signs_ba10, signs_ba10_rd = dataset_best_n_attributes(10,signs)
+    sm_signs_ba2, sm_signs_ba2_rd = dataset_best_n_attributes(2,sm_signs)
+    sm_signs_ba5, sm_signs_ba5_rd = dataset_best_n_attributes(5,sm_signs)
+    sm_signs_ba10, sm_signs_ba10_rd = dataset_best_n_attributes(10,sm_signs)
+    
     # Store the datasets
     # signs_ba2.to_csv('./data/x_train_gr_smpl_2ba.csv')
     # signs_ba5.to_csv('./data/x_train_gr_smpl_5ba.csv')
     # signs_ba10.to_csv('./data/x_train_gr_smpl_10ba.csv')
 
+    df_to_test = [
+        signs_rd,
+        signs_ba2_rd,
+        signs_ba5_rd,
+        signs_ba10_rd,
+        sm_signs_rd,
+        sm_signs_ba2_rd,
+        sm_signs_ba5_rd,
+        sm_signs_ba10_rd
+    ]
     # Run Bayes over the new sets
-    gaussian_train_test(signs_rd,'label')
-    gaussian_train_test(signs_ba2_rd,'label')
-    gaussian_train_test(signs_ba5_rd,'label')
-    gaussian_train_test(signs_ba10_rd,'label')
+    for df in df_to_test:
+        gaussian_train_test(df,'label')
