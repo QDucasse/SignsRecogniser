@@ -41,7 +41,8 @@ def read_add_labels(path,rows):
     rows_with_label = []
     with open(path,'r') as reader:
         for i,line in enumerate(reader.readlines()):
-            rows_with_label.append(line.strip() + ',' + rows[i])
+            if (i!=0):
+                rows_with_label.append(rows[i].strip() + ', label' + line)
     return rows_with_label
 
 def select_instances(lab_dataset):
@@ -50,7 +51,7 @@ def select_instances(lab_dataset):
     '''
     instance_holder = [[],[],[],[],[],[],[],[],[],[]]
     for instance in lab_dataset:
-        label = int(instance[0])
+        label = int(instance[-2])
         instance_holder[label].append(instance)
     min_instances = min(map(len,instance_holder))
 
@@ -67,7 +68,7 @@ def select_rd_instances(lab_dataset):
     '''
     instance_holder = [[],[],[],[],[],[],[],[],[],[]]
     for instance in lab_dataset:
-        label = int(instance[0])
+        label = int(instance[-2])
         instance_holder[label].append(instance)
     min_instances = min(map(len,instance_holder))
 
@@ -94,8 +95,8 @@ def create_header(index_list = [i for i in range(2304)]):
     String of the
     '''
     header = "@RELATION signs\n\n"
-    attributes = ["@ATTRIBUTE class NUMERIC\n"]
-    attributes += [("@ATTRIBUTE pixel" + str(i) + " NUMERIC\n") for i in index_list]
+    attributes = [("@ATTRIBUTE 'pixel" + str(i) + "' NUMERIC\n") for i in index_list]
+    attributes += ["@ATTRIBUTE 'label' {label0,label1,label2,label3,label4,label5,label6,label7,label8,label9}\n"]
     attributes_string = "".join(attributes)
     return header + attributes_string + '\n\n'
 
