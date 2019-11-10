@@ -188,13 +188,13 @@ def select_instances(df,feature,rd=True):
     Parameters
     ==========
     df: Pandas.DataFrame
-        Dataframe that needs to be shrinked.
+        Dataframe that needs to be reduced.
     feature: string
-        Feature the shrinking will be based upon.
+        Feature the reducing will be based upon.
 
     Returns
     =======
-    shrinked_df: Pandas.Dataframe
+    reduced_df: Pandas.Dataframe
         Portion of the base dataframe with the same number of instances
         selected for each feature class.
     '''
@@ -202,12 +202,15 @@ def select_instances(df,feature,rd=True):
     min_instances = min(df_grouplab.size())
     if rd:
         sm_df = pd.DataFrame(df_grouplab.head(n=min_instances).reset_index(drop=True))
-        sm_df.name = "Shrinked Dataframe '{0}'".format(df.name)
+        sm_df.name = "reduced Dataframe '{0}'".format(df.name)
         return sm_df
     else:
         sm_df = pd.DataFrame(df_grouplab.sample(n=min_instances).reset_index(drop=True))
-        sm_df.name = "Shrinked Dataframe (random selection) '{0}'".format(df.name)
+        sm_df.name = "reduced Dataframe (random selection) '{0}'".format(df.name)
         return sm_df
+
+## Transformations
+## ===============
 
 def normalise_dataset(df,class_feature):
     '''
@@ -280,11 +283,16 @@ if __name__ == "__main__":
     plot_feature(signs,'label')
     plot_feature(sm_signs,'label')
 
-    signs_rd = divide_by_255(signs_rd,'label')
-    sm_signs_rd = divide_by_255(sm_signs_rd,'label')
+    signs_rd_norm1 = divide_by_255(signs_rd,'label')
+    signs_rd_norm2 = normalise_dataset(signs_rd,'label')
+    sm_signs_rd_norm1 = divide_by_255(sm_signs_rd,'label')
+    sm_signs_rd_norm2 = normalise_dataset(sm_signs_rd,'label')
 
-    print_head_tail(signs_rd)
-    print_head_tail(sm_signs_rd)
+    # Print the beginning/end of the datasets
+    # print_head_tail(signs_rd)
+    # print_head_tail(sm_signs_rd)
+    # print_head_tail(sm_signs_rd_norm1)
+    # print_head_tail(sm_signs_rd_norm2)
 
     display_nth_sign(signs,1300)
     display_nth_sign(signs,5600)

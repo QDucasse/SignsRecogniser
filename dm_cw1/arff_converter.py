@@ -4,6 +4,7 @@
 '''
 
 import random
+from random import shuffle
 from loader import path_x_train, path_y_train, path_boolean_mask
 
 path_base_arff = './data/arff/'
@@ -45,15 +46,11 @@ def read_add_labels(path,rows):
                 rows_with_label.append(rows[i].strip() + ', label' + line)
     return rows_with_label
 
-def select_instances(lab_dataset,bm=False):
+def select_instances(lab_dataset,rd=True):
     '''
     Select the same number of instances for each label (first n ones).
     '''
-    if bm:
-        instance_holder = [[],[]]
-    else:
-        instance_holder = [[],[],[],[],[],[],[],[],[],[]]
-
+    instance_holder = [[],[],[],[],[],[],[],[],[],[]]
     for instance in lab_dataset:
         label = int(instance[-2])
         instance_holder[label].append(instance)
@@ -62,31 +59,36 @@ def select_instances(lab_dataset,bm=False):
     new_dataset = []
     # [instance for instance_set[:min_instances] in instance_holder for instance in instance_set]
     for instance_set in instance_holder:
-        for instance in instance_set[:min_instances]:
+        if rd:
+            sm_instance_set = random.sample(instance_set, min_instances)
+        else:
+            sm_instance_set = instance_set[:min_instances]
+        for instance in sm_instance_set:
             new_dataset.append(instance)
     return new_dataset
 
-def select_rd_instances(lab_dataset,bm=False):
+def apply_boolean_mask(lab_dataset,nb):
     '''
-    Select the same number of instances for each label (first n ones).
-    '''
-    if bm:
-        instance_holder = [[],[]]
-    else:
-        instance_holder = [[],[],[],[],[],[],[],[],[],[]]
+    Apply a boolean mask to a labelled dataset.
+    Parameters
+    ==========
+    lab_dataset: string
+        Labelled dataset.
+    nb: int
+        Label that will become 0 while others are 1.
 
+    Returns
+    =======
+    Dataset labelled with a boolean mask for <nb>.
+    '''
+    boolean_mask_dataset = []
     for instance in lab_dataset:
         label = int(instance[-2])
-        instance_holder[label].append(instance)
-    min_instances = min(map(len,instance_holder))
-
-    new_dataset = []
-    # [instance for instance_set[:min_instances] in instance_holder for instance in instance_set]
-    for instance_set in instance_holder:
-        for instance in random.sample(instance_set, min_instances):
-            new_dataset.append(instance)
-    return new_dataset
-
+        if label==nb:
+            boolean_mask_dataset.append(instance[:-2]+'0')
+        else:
+            boolean_mask_dataset.append(instance[:-2]+'1')
+    return boolean_mask_dataset
 
 def create_header(index_list = [i for i in range(2304)]):
     '''
@@ -122,6 +124,7 @@ def add_data(header,data_list):
     =======
     Concatenation of header, @DATA and the joined instance list
     '''
+    shuffle(data_list)
     return header + "@DATA " + ''.join(data_list)
 
 def write_dataset(dataset_name,dataset):
@@ -166,8 +169,8 @@ def create_base_dataset():
     '''
     create_dataset(path_x_train,path_y_train,"base_dataset")
 
-def create_shrinked_dataset(path_content,path_labels,dataset_name,
-                            index_list = [i for i in range(2304)], random_selection=True, bm=False):
+def create_reduced_dataset(path_content,path_labels,dataset_name,
+                            index_list = [i for i in range(2304)], random_selection=True):
     '''
     Creates a Weka file with the content from the first path prefixed by the
     content from the second, selecting only the <index_list> attributes
@@ -185,19 +188,52 @@ def create_shrinked_dataset(path_content,path_labels,dataset_name,
     '''
     images = read_rows(path_content)
     data = read_add_labels(path_labels,images)
-    if not(random_selection):
-        shrinked_data = select_instances(data,bm=bm)
-    else:
-        shrinked_data = select_rd_instances(data,bm=bm)
+    reduced_data = select_instances(data,rd=random_selection)
     header = create_header(index_list)
-    dataset = add_data(header,shrinked_data)
+    dataset = add_data(header,reduced_data)
     write_dataset(dataset_name,dataset)
+
+def create_reduced_dataset_bm(path_content,path_labels,dataset_name, nb,
+                              index_list = [i for i in range(2304)], random_selection=True):
+    '''
+    Creates a Weka file with the content from the first path prefixed by the
+    content from the second, selecting only the <index_list> attributes
+    and finally storing it under the <dataset_name>
+    Parameters
+    ==========
+    path_content: string
+        Path to the content of the instances.
+    path_labels: string
+        Path to the labels (prefix) of the instances.
+    dataset_name: string
+        Name of the final arff file.
+    index_list: int list
+        List of the wanted attributes.
+    '''
+    images = read_rows(path_content)
+    data = read_add_labels(path_labels,images)
+    reduced_data = select_instances(data,rd=random_selection)
+    bm_reduced_data = apply_boolean_mask(reduced_data,nb)
+    header = create_header(index_list)
+    dataset = add_data(header,bm_reduced_data)
+    write_dataset(dataset_name,dataset)
+
+ba_0 = []
+ba_1 = []
+ba_2 = []
+ba_3 = []
+ba_4 = []
+ba_5 = []
+ba_6 = []
+ba_7 = []
+ba_8 = []
+ba_9 = []
 
 if __name__ == "__main__":
     create_base_dataset()
-    create_shrinked_dataset(path_x_train,path_y_train,'sm_rd_dataset')
-    create_shrinked_dataset(path_x_train,path_y_train,'sm_dataset',random_selection = False)
+    create_reduced_dataset(path_x_train,path_y_train,'sm_rd_dataset')
+    create_reduced_dataset(path_x_train,path_y_train,'sm_dataset',random_selection = False)
 
     for i in range(10):
-        create_shrinked_dataset(path_x_train,path_boolean_mask(i),'sm_rd_dataset'+str(i),bm=True)
-        create_shrinked_dataset(path_x_train,path_boolean_mask(i),'sm_dataset'+str(i),random_selection = False,bm=True)
+        create_reduced_dataset_bm(path_x_train,path_y_train,'/bm/sm_dataset'+str(i), random_selection=True, nb=i)
+        create_reduced_dataset_bm(path_x_train,path_y_train,'/bm/sm_dataset_rd'+str(i), random_selection=False, nb=i)

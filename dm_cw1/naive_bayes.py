@@ -17,7 +17,7 @@ from sklearn.naive_bayes     import GaussianNB
 #            NAIVE BAYES BENCHMARK
 # ============================================
 
-def gaussian_train_test(df,class_feature,ratio=0.2):
+def gaussian_train_test(df,class_feature,ratio=0.2,heatmap=False):
     '''
     Runs a gaussian model over the dataset with the class feature.
 
@@ -33,9 +33,9 @@ def gaussian_train_test(df,class_feature,ratio=0.2):
     # Print the accuracy score of the model
     print("Naive-Bayes accuracy: ", accuracy_score(target_test, pred, normalize = True))
     # Print the confusion matrix of the model
-    print_cmat(target_test,pred)
+    print_cmat(target_test,pred,heatmap=heatmap)
 
-def print_cmat(actual,pred):
+def print_cmat(actual,pred,heatmap=False):
     '''
     Print the confusion matrix for the two provided values.
     Parameters
@@ -45,7 +45,13 @@ def print_cmat(actual,pred):
     pred: Pandas.Dataframe
         Actual values obtained through the fit() method of the model.
     '''
-    print(pd.crosstab(actual,pred,rownames=['Actual'],colnames=['Predicted']))
+    cor = pd.crosstab(actual,pred,rownames=['Actual'],colnames=['Predicted'])
+    print(cor)
+    if heatmap:
+        ax = sns.heatmap(cor,annot=True)
+        bottom, top = ax.get_ylim()
+        ax.set_ylim(bottom + 0.5, top - 0.5)
+        plt.show()
 
 
 # ============================================
@@ -206,22 +212,24 @@ if __name__ == "__main__":
     sm_signs_ba2, sm_signs_ba2_rd = dataset_best_n_attributes(2,sm_signs)
     sm_signs_ba5, sm_signs_ba5_rd = dataset_best_n_attributes(5,sm_signs)
     sm_signs_ba10, sm_signs_ba10_rd = dataset_best_n_attributes(10,sm_signs)
-    
+
     # Store the datasets
     # signs_ba2.to_csv('./data/x_train_gr_smpl_2ba.csv')
     # signs_ba5.to_csv('./data/x_train_gr_smpl_5ba.csv')
     # signs_ba10.to_csv('./data/x_train_gr_smpl_10ba.csv')
 
     df_to_test = [
+        signs,
         signs_rd,
-        signs_ba2_rd,
-        signs_ba5_rd,
-        signs_ba10_rd,
+        # signs_ba2_rd,
+        # signs_ba5_rd,
+        # signs_ba10_rd,
+        sm_signs,
         sm_signs_rd,
-        sm_signs_ba2_rd,
-        sm_signs_ba5_rd,
-        sm_signs_ba10_rd
+        # sm_signs_ba2_rd,
+        # sm_signs_ba5_rd,
+        # sm_signs_ba10_rd
     ]
     # Run Bayes over the new sets
     for df in df_to_test:
-        gaussian_train_test(df,'label')
+        gaussian_train_test(df,'label',heatmap=False)
