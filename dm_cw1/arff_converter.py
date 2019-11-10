@@ -4,13 +4,14 @@
 '''
 
 import random
-from random import shuffle
-from loader import path_x_train, path_y_train, path_boolean_mask
+from random      import shuffle
+from loader      import path_x_train, path_y_train, path_boolean_mask
+from naive_bayes import ba0,ba1,ba2,ba3,ba4,ba5,ba6,ba7,ba8,ba9
 
 path_base_arff = './data/arff/'
 
 
-def read_rows(path = path_x_train):
+def read_rows(path = path_x_train,index_list = [i for i in range(2304)]):
     '''
     Store the rows of a file in a list.
     Returns
@@ -21,7 +22,9 @@ def read_rows(path = path_x_train):
     rows = []
     with open(path_x_train,'r') as reader:
         for i,line in enumerate(reader.readlines()):
-            rows.append(line)
+            pixels = line.split(",")
+            selected_pixels = [pixels[i] for i in index_list]
+            rows.append(','.join(selected_pixels))
     return rows
 
 def read_add_labels(path,rows):
@@ -85,9 +88,9 @@ def apply_boolean_mask(lab_dataset,nb):
     for instance in lab_dataset:
         label = int(instance[-2])
         if label==nb:
-            boolean_mask_dataset.append(instance[:-2]+'0')
+            boolean_mask_dataset.append(instance[:-2]+'0\n')
         else:
-            boolean_mask_dataset.append(instance[:-2]+'1')
+            boolean_mask_dataset.append(instance[:-2]+'1\n')
     return boolean_mask_dataset
 
 def create_header(index_list = [i for i in range(2304)]):
@@ -127,6 +130,11 @@ def add_data(header,data_list):
     shuffle(data_list)
     return header + "@DATA " + ''.join(data_list)
 
+def best_n(n):
+    best_attributes = ba0[:n] + ba1[:n] + ba2[:n] + ba3[:n] + ba4[:n] \
+                     + ba5[:n] + ba6[:n] + ba7[:n] + ba8[:n] + ba9[:n]
+    return best_attributes
+
 def write_dataset(dataset_name,dataset):
     '''
     Write an arff file.
@@ -157,7 +165,7 @@ def create_dataset(path_content,path_labels,dataset_name, index_list = [i for i 
     index_list: int list
         List of the wanted attributes.
     '''
-    images = read_rows(path_content)
+    images = read_rows(path_content,index_list)
     data = read_add_labels(path_labels,images)
     header = create_header(index_list)
     dataset = add_data(header,data)
@@ -186,7 +194,7 @@ def create_reduced_dataset(path_content,path_labels,dataset_name,
     index_list: int list
         List of the wanted attributes.
     '''
-    images = read_rows(path_content)
+    images = read_rows(path_content,index_list)
     data = read_add_labels(path_labels,images)
     reduced_data = select_instances(data,rd=random_selection)
     header = create_header(index_list)
@@ -210,7 +218,7 @@ def create_reduced_dataset_bm(path_content,path_labels,dataset_name, nb,
     index_list: int list
         List of the wanted attributes.
     '''
-    images = read_rows(path_content)
+    images = read_rows(path_content,index_list)
     data = read_add_labels(path_labels,images)
     reduced_data = select_instances(data,rd=random_selection)
     bm_reduced_data = apply_boolean_mask(reduced_data,nb)
@@ -218,22 +226,15 @@ def create_reduced_dataset_bm(path_content,path_labels,dataset_name, nb,
     dataset = add_data(header,bm_reduced_data)
     write_dataset(dataset_name,dataset)
 
-ba_0 = []
-ba_1 = []
-ba_2 = []
-ba_3 = []
-ba_4 = []
-ba_5 = []
-ba_6 = []
-ba_7 = []
-ba_8 = []
-ba_9 = []
-
 if __name__ == "__main__":
     create_base_dataset()
     create_reduced_dataset(path_x_train,path_y_train,'sm_rd_dataset')
     create_reduced_dataset(path_x_train,path_y_train,'sm_dataset',random_selection = False)
+    create_reduced_dataset(path_x_train,path_y_train,'sm_rd_dataset_ba2',index_list=list(set(best_n(2))))
+    create_reduced_dataset(path_x_train,path_y_train,'sm_rd_dataset_ba5',index_list=list(set(best_n(5))))
+    create_reduced_dataset(path_x_train,path_y_train,'sm_rd_dataset_ba10',index_list=list(set(best_n(10))))
 
+    # # Boolean masked datasets
     for i in range(10):
         create_reduced_dataset_bm(path_x_train,path_y_train,'/bm/sm_dataset'+str(i), random_selection=True, nb=i)
         create_reduced_dataset_bm(path_x_train,path_y_train,'/bm/sm_dataset_rd'+str(i), random_selection=False, nb=i)

@@ -177,6 +177,29 @@ def best_n_attributes(nb):
     ba_n = [str(i) for i in ba_n]
     return ba_n
 
+def display_nth_ba(n):
+    '''
+    Display the nth sign of the dataset.
+    Parameters
+    ==========
+    df: Pandas.Dataframe
+        Dataset from which the element will be taken.
+    n: int
+        Row of the dataset.
+    '''
+    best_attributes = ba0[:n] + ba1[:n] + ba2[:n] + ba3[:n] + ba4[:n] \
+                     + ba5[:n] + ba6[:n] + ba7[:n] + ba8[:n] + ba9[:n]
+    visualize_image = []
+    for i in range(2304):
+        if (i in best_attributes):
+            visualize_image.append(255)
+        else:
+            visualize_image.append(0)
+    plt.figure()
+    plt.imshow(np.array(visualize_image).reshape((48,48)),cmap='Greys')
+    plt.show()
+
+
 def dataset_best_n_attributes(nb,df):
     '''
     Generates a dataset and randomised version of the given dataset with the extracted
@@ -219,17 +242,22 @@ if __name__ == "__main__":
     # signs_ba10.to_csv('./data/x_train_gr_smpl_10ba.csv')
 
     df_to_test = [
-        signs,
-        signs_rd,
+        # signs,
+        # signs_rd,
         # signs_ba2_rd,
         # signs_ba5_rd,
         # signs_ba10_rd,
-        sm_signs,
-        sm_signs_rd,
-        # sm_signs_ba2_rd,
-        # sm_signs_ba5_rd,
-        # sm_signs_ba10_rd
+        # sm_signs,
+        # sm_signs_rd,
+        sm_signs_ba2_rd,
+        sm_signs_ba5_rd,
+        sm_signs_ba10_rd
     ]
     # Run Bayes over the new sets
     for df in df_to_test:
         gaussian_train_test(df,'label',heatmap=False)
+
+    # Display the position of the best attributes
+    # display_nth_ba(2)
+    # display_nth_ba(5)
+    # display_nth_ba(10)
