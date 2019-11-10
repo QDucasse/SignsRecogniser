@@ -143,7 +143,7 @@ def plot_feature(df,feature):
     sns.countplot(x='label',data=df)
     plt.show()
 
-def display_nth_sign(df,n):
+def display_nth_sign(df,n,feature='label'):
     '''
     Display the nth sign of the dataset.
     Parameters
@@ -153,8 +153,12 @@ def display_nth_sign(df,n):
     n: int
         Row of the dataset.
     '''
+    cols = [col for col in df.columns if col!=feature]
     plt.figure()
-    plt.imshow(df.iloc(n),reshape((48,48)))
+    plt.axis('off')
+    plt.imshow(df[cols].loc[n].values.reshape((48,48)),cmap='Greys')
+    plt.show()
+
 
 ## Filters
 ## =======
@@ -267,7 +271,7 @@ def separate_train_test(df,class_feature, ratio=0.20):
 
 
 if __name__ == "__main__":
-    # Loading base dataset and sampling/randomising it
+    # # Loading base dataset and sampling/randomising it
     signs, signs_rd = load_base_dataset(path_x_train,path_y_train)
     sm_signs = select_instances(signs,'label')
     sm_signs_rd = randomise(sm_signs)
@@ -281,3 +285,8 @@ if __name__ == "__main__":
 
     print_head_tail(signs_rd)
     print_head_tail(sm_signs_rd)
+
+    display_nth_sign(signs,1300)
+    display_nth_sign(signs,5600)
+    display_nth_sign(signs,10400)
+    display_nth_sign(signs,12650)
