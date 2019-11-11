@@ -53,6 +53,6 @@ setup(
 
     packages=find_packages(),
 
-    install_requires=['numpy', 'matplotlib', 'pandas','sklearn','opencv-python','seaborn'],
+    install_requires=['numpy', 'matplotlib', 'pandas','sklearn','opencv-python','seaborn','image'],
 
 )

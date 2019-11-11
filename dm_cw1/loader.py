@@ -5,10 +5,12 @@
 
 import cv2
 import sklearn
+
 import numpy             as np
 import pandas            as pd
 import seaborn           as sns
 import matplotlib.pyplot as plt
+from PIL import Image
 from sklearn                 import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.metrics         import confusion_matrix,accuracy_score
@@ -112,6 +114,16 @@ def load_dataset_with_boolean_mask(nb):
     signs_1label.insert(0,"label",labels.values)
     signs_1label.name = "Signs with boolean mask for label" + str(nb)
     return signs_1label
+
+def store_1_image(df,n):
+    '''
+    Store one test image.
+    '''
+    cols = [col for col in df.columns if col!='label']
+    nth_image = df[cols].loc[n]
+    im = Image.fromarray(nth_image.values.reshape((48,48)))
+    im = im.convert('RGB')
+    im.save('./data/test_image.jpg')
 
 ## Data visualisation
 ## ==================
@@ -276,6 +288,7 @@ def separate_train_test(df,class_feature, ratio=0.20):
 if __name__ == "__main__":
     # # Loading base dataset and sampling/randomising it
     signs, signs_rd = load_base_dataset(path_x_train,path_y_train)
+    store_1_image(signs,1300)
     sm_signs = select_instances(signs,'label')
     sm_signs_rd = randomise(sm_signs)
 
@@ -295,6 +308,7 @@ if __name__ == "__main__":
     # print_head_tail(sm_signs_rd_norm2)
 
     display_nth_sign(signs,1300)
-    display_nth_sign(signs,5600)
-    display_nth_sign(signs,10400)
-    display_nth_sign(signs,12650)
+    # display_nth_sign(signs,1300)
+    # display_nth_sign(signs,5600)
+    # display_nth_sign(signs,10400)
+    # display_nth_sign(signs,12650)
