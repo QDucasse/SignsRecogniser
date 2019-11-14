@@ -43,12 +43,12 @@ one of the main areas of the `loader.py` file).
   - [X] Naive Bayes estimation (Q.4)
   - [X] Feature selection (Q.5)
   - [X] Classification improvement (Q.6)
-  - [ ] Conclusions on Naive Bayes (Q.7)
-  - [ ] Creation of a Complex Bayes Net (Q.8)
-  - [ ] Conclusion on Bayes Nets (Q.9)
+  - [X] Conclusions on Naive Bayes (Q.7)
+  - [X] Creation of a Complex Bayes Net (Q.8)
+  - [X] Conclusion on Bayes Nets (Q.9)
   - [X] Clustering, k-means (Q.10)
-  - [ ] Conclusions on clustering (Q.12, Q.13)
-  - [ ] MSc research questions (Q.14, Q.15)
+  - [X] Conclusions on clustering (Q.12, Q.13)
+  - [X] MSc research questions (Q.14, Q.15)
 
   ---
 
